@@ -198,7 +198,6 @@ static void activate(GtkApplication *app, gpointer *user_data) {
             bbf_channel_init(ic, INSTR, BBF_INPUTS[i]);
             gtk_grid_attach(main_grid, ic->lbl_name, i*2, 1, 2, 1);
             gtk_grid_attach(main_grid, ic->cb_Sens, i*2, 2, 2, 1);
-            printf("Instrument channel\n");
         } else {
             // Line channel
             bbf_channel_init(ic, LINE, BBF_INPUTS[i]);
@@ -209,33 +208,36 @@ static void activate(GtkApplication *app, gpointer *user_data) {
         gtk_grid_attach(main_grid, ic->sc_vol, i*2, 4, 2, 2);
     }
 
+    separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+    gtk_grid_attach(main_grid, separator, 0, 6, 24, 1);
+
     // Playbacks
     label_playbacks = gtk_label_new("Playback");
     gtk_widget_set_hexpand(label_playbacks, TRUE);
-    gtk_grid_attach(main_grid, label_playbacks, 0, 6, 24, 1);
+    gtk_grid_attach(main_grid, label_playbacks, 0, 7, 24, 1);
 
     int pc_count = 0;
     for (int i = 0 ; i < BBF_NOF_OUTPUTS ; ++i) {
         bbf_channel_t *pc = &app_data->playback_channels[pc_count];
         bbf_channel_init(pc, PCM, BBF_OUTPUTS[i][0]);
-        gtk_grid_attach(main_grid, pc->lbl_name, pc_count*2, 7, 2, 1);
-        gtk_grid_attach(main_grid, pc->sc_pan, pc_count*2, 8, 2, 1);
+        gtk_grid_attach(main_grid, pc->lbl_name, pc_count*2, 8, 2, 1);
+        gtk_grid_attach(main_grid, pc->sc_pan, pc_count*2, 9, 2, 1);
         gtk_widget_set_vexpand(pc->sc_vol, TRUE);
-        gtk_grid_attach(main_grid, pc->sc_vol, pc_count*2, 9, 2, 2);
+        gtk_grid_attach(main_grid, pc->sc_vol, pc_count*2, 10, 2, 2);
         pc_count++;
 
         pc = &app_data->playback_channels[pc_count];
         bbf_channel_init(pc, PCM, BBF_OUTPUTS[i][1]);
-        gtk_grid_attach(main_grid, pc->lbl_name, pc_count*2, 7, 2, 1);
-        gtk_grid_attach(main_grid, pc->sc_pan, pc_count*2, 8, 2, 1);
+        gtk_grid_attach(main_grid, pc->lbl_name, pc_count*2, 8, 2, 1);
+        gtk_grid_attach(main_grid, pc->sc_pan, pc_count*2, 9, 2, 1);
         gtk_widget_set_vexpand(pc->sc_vol, TRUE);
-        gtk_grid_attach(main_grid, pc->sc_vol, pc_count*2, 9, 2, 2);
+        gtk_grid_attach(main_grid, pc->sc_vol, pc_count*2, 10, 2, 2);
         pc_count++;
     }
 
     // Output selector
     label_output = gtk_label_new("Output:");
-    gtk_grid_attach(main_grid, label_output, 0, 11, 2, 1);
+    gtk_grid_attach(main_grid, label_output, 0, 12, 2, 1);
     cb_output = gtk_combo_box_text_new();
     for (int i = 0 ; i < BBF_NOF_OUTPUTS ; ++i) {
         gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(cb_output), NULL,
@@ -244,11 +246,11 @@ static void activate(GtkApplication *app, gpointer *user_data) {
     }
     g_signal_connect(cb_output, "changed", *G_CALLBACK(on_output_changed),
                      app_data);
-    gtk_grid_attach(main_grid, cb_output, 2, 11, 2, 1);
+    gtk_grid_attach(main_grid, cb_output, 2, 12, 2, 1);
 
     // Clock
     label_clock = gtk_label_new("Clock Mode:");
-    gtk_grid_attach(main_grid, label_clock, 4, 11, 2, 1);
+    gtk_grid_attach(main_grid, label_clock, 4, 12, 2, 1);
     app_data->cb_clock = gtk_combo_box_text_new();
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(app_data->cb_clock), NULL, 
                               "Auto Sync");
@@ -257,7 +259,7 @@ static void activate(GtkApplication *app, gpointer *user_data) {
     g_signal_connect(app_data->cb_clock, "changed", 
                      *G_CALLBACK(on_clock_changed),
                      app_data);
-    gtk_grid_attach(main_grid, app_data->cb_clock, 6, 11, 2, 1);
+    gtk_grid_attach(main_grid, app_data->cb_clock, 6, 12, 2, 1);
 
 
     gtk_widget_set_hexpand(GTK_WIDGET(main_grid), TRUE);

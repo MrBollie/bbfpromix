@@ -78,7 +78,7 @@ static void on_bt_toggled_48V(GtkWidget* button, gpointer user_data) {
 
 static void on_bt_toggled_PAD(GtkWidget* button, gpointer user_data) {
     bbf_channel_t *c = (bbf_channel_t*)user_data;
-    if (c->no_signals)
+    if (c->no_signals || !c->pad)
         return;
 
     gboolean v = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
@@ -89,7 +89,7 @@ static void on_bt_toggled_PAD(GtkWidget* button, gpointer user_data) {
 
 static void on_cb_sens(GtkWidget* combo, gpointer user_data) {
     bbf_channel_t *c = (bbf_channel_t*)user_data;
-    if (c->no_signals)
+    if (c->no_signals || !c->sens)
         return;
     gint active = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
     if (active < 0 || active > 1)
@@ -129,9 +129,7 @@ static void on_slider_changed(GtkWidget* slider, gpointer user_data) {
         val_r = vol;
     }
     c->no_signals = true;
-    printf("Setting %s to %d\n", c->cur_output->name_l, (int)val_l);
     snd_mixer_selem_set_playback_volume_all(c->cur_output->elem_l, (int)val_l);
-    printf("Setting %s to %d\n", c->cur_output->name_r, (int)val_r);
     snd_mixer_selem_set_playback_volume_all(c->cur_output->elem_r, (int)val_r);
     c->no_signals = false;
 }
@@ -146,6 +144,9 @@ void bbf_channel_init(bbf_channel_t *channel, bbf_channel_type type,
                       const char *name) {
 
     channel->cur_output = NULL;
+    channel->pad = NULL;
+    channel->phantom = NULL;
+    channel->sens = NULL;
     channel->no_signals = false;
     channel->name = name;
     channel->type = type;
@@ -160,10 +161,15 @@ void bbf_channel_init(bbf_channel_t *channel, bbf_channel_type type,
     channel->lbl_name = gtk_label_new(name);
     channel->sc_pan = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
                                                -100, 100, 1);
+    gtk_scale_add_mark(GTK_SCALE(channel->sc_pan), 0, GTK_POS_TOP, NULL);
     g_signal_connect(channel->sc_pan, "value-changed",
                      *G_CALLBACK(on_slider_changed), channel);
+
     channel->sc_vol = gtk_scale_new_with_range(GTK_ORIENTATION_VERTICAL,
                                                0, 46341, 1);
+    gtk_range_set_inverted(GTK_RANGE(channel->sc_vol), 1);
+    gtk_scale_add_mark(GTK_SCALE(channel->sc_vol), 32768, GTK_POS_RIGHT, 
+                       NULL);
     g_signal_connect(channel->sc_vol, "value-changed",
                      *G_CALLBACK(on_slider_changed), channel);
 
@@ -175,7 +181,6 @@ void bbf_channel_init(bbf_channel_t *channel, bbf_channel_type type,
         g_signal_connect(channel->bt_PAD, "toggled",
                          *G_CALLBACK(on_bt_toggled_PAD), channel);
     } else if (channel->type == INSTR) {
-        printf("Indeed instrument\n");
         channel->cb_Sens = gtk_combo_box_text_new();
         gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(channel->cb_Sens),
                                   NULL, "-10 dBu");
@@ -191,6 +196,9 @@ void bbf_channel_reset(bbf_channel_t *channel) {
         channel->outputs[i].elem_l = NULL;
         channel->outputs[i].elem_r = NULL;
     }
+    channel->pad = NULL;
+    channel->phantom = NULL;
+    channel->sens = NULL;
 }
 
 void bbf_channel_set_output(bbf_channel_t *channel, unsigned int output) {
@@ -300,7 +308,6 @@ void bbf_update_sliders(bbf_channel_t *channel) {
     snd_mixer_selem_get_playback_volume(channel->cur_output->elem_r, cid,
                                         &val_r);
     int32_t diff = val_r - val_l;
-    printf("- Diff: %d", diff);
     int8_t pan = 0;
     uint32_t fader = 0;
     if (diff < 0) {
