@@ -20,10 +20,9 @@ static void update_clock(bbf_app_data_t *app_data) {
 
     unsigned int item = 0;
     snd_mixer_selem_get_enum_item(app_data->clock, 0, &item);
-    printf("Updating clock: %d\n", item);
-    app_data->no_signals = false;
-    gtk_combo_box_set_active(GTK_COMBO_BOX(app_data->cb_clock), item);
     app_data->no_signals = true;
+    gtk_combo_box_set_active(GTK_COMBO_BOX(app_data->cb_clock), item);
+    app_data->no_signals = false;
 }
 
 static int on_selem_changed_clock(snd_mixer_elem_t *elem, unsigned int mask) {
@@ -133,6 +132,16 @@ static void reset_alsa_mixer_elems(bbf_app_data_t *app_data) {
 }
 
 static void on_clock_changed(GtkComboBox* combo, gpointer user_data) {
+    bbf_app_data_t *app_data = (bbf_app_data_t*)user_data;
+    if (app_data->no_signals || !app_data->clock)
+        return;
+    gint active = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
+    if (active < 0 || active > 1)
+        return;
+
+    app_data->no_signals = true;
+    snd_mixer_selem_set_enum_item(app_data->clock, 0, active);
+    app_data->no_signals = false;
 }
 
 static void on_output_changed(GtkComboBox* combo, gpointer user_data) {
@@ -277,6 +286,7 @@ int main(int argc, char** argv)
     bbf_app_data_t app_data;
     app_data.mixer = NULL;
     app_data.clock = NULL;
+    app_data.no_signals = false;
     int status;
 
     app = gtk_application_new ("de.bollie.babymixpro", G_APPLICATION_FLAGS_NONE);
