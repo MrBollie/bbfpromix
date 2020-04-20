@@ -27,7 +27,7 @@ static int on_selem_changed_48V(snd_mixer_elem_t *elem, unsigned int mask) {
     else if (mask == SND_CTL_EVENT_MASK_VALUE) {
         if (c->no_signals)
             return 0;
-        bbf_update_sliders(c);
+        bbf_update_switches(c);
     }
 
     return 0;
@@ -43,7 +43,7 @@ static int on_selem_changed_pad(snd_mixer_elem_t *elem, unsigned int mask) {
     else if (mask == SND_CTL_EVENT_MASK_VALUE) {
         if (c->no_signals)
             return 0;
-        bbf_update_sliders(c);
+        bbf_update_switches(c);
     }
 
     return 0;
@@ -59,7 +59,7 @@ static int on_selem_changed_sens(snd_mixer_elem_t *elem, unsigned int mask) {
     else if (mask == SND_CTL_EVENT_MASK_VALUE) {
         if (c->no_signals)
             return 0;
-
+	bbf_update_switches(c);
     }
 
     return 0;
@@ -225,6 +225,7 @@ bool bbf_find_and_set(bbf_channel_t *channel, snd_mixer_elem_t *elem) {
             channel->phantom = elem;
             snd_mixer_elem_set_callback(elem, on_selem_changed_48V);
             snd_mixer_elem_set_callback_private(elem, channel);
+            bbf_update_switches(channel);
             return true;
         }
         snprintf(name, 32, "Mic-%s PAD", channel->name);
@@ -232,14 +233,16 @@ bool bbf_find_and_set(bbf_channel_t *channel, snd_mixer_elem_t *elem) {
             channel->pad = elem;
             snd_mixer_elem_set_callback(elem, on_selem_changed_pad);
             snd_mixer_elem_set_callback_private(elem, channel);
+            bbf_update_switches(channel);
             return true;
         }
     } else if (channel->type == INSTR) {
-        snprintf(name, 32, "Line-%s Sens", channel->name);
+        snprintf(name, 32, "Line-%s Sens.", channel->name);
         if (strcmp(name, snd_mixer_selem_get_name(elem)) == 0) {
             channel->sens = elem;
             snd_mixer_elem_set_callback(elem, on_selem_changed_sens);
             snd_mixer_elem_set_callback_private(elem, channel);
+            bbf_update_switches(channel);
             return true;
         }
     }

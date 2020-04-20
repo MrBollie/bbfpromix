@@ -20,8 +20,9 @@ static void update_clock(bbf_app_data_t *app_data) {
 
     unsigned int item = 0;
     snd_mixer_selem_get_enum_item(app_data->clock, 0, &item);
+    printf("Updating clock: %d\n", item);
     app_data->no_signals = false;
-    gtk_combo_box_set_active(GTK_COMBO_BOX(app_data->clock), item);
+    gtk_combo_box_set_active(GTK_COMBO_BOX(app_data->cb_clock), item);
     app_data->no_signals = true;
 }
 
@@ -107,7 +108,7 @@ static void connect_alsa_mixer_elems(bbf_app_data_t *app_data) {
     for (elem = snd_mixer_first_elem (app_data->mixer); elem;
          elem = snd_mixer_elem_next (elem)) {
 
-        if (strcmp("Clock Source", snd_mixer_selem_get_name(elem)) == 0) {
+        if (strcmp("Sample Clock Source", snd_mixer_selem_get_name(elem)) == 0) {
             app_data->clock = elem;
             snd_mixer_elem_set_callback(elem, on_selem_changed_clock);
             snd_mixer_elem_set_callback_private(elem, app_data);
