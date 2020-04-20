@@ -161,6 +161,7 @@ void bbf_channel_init(bbf_channel_t *channel, bbf_channel_type type,
     channel->lbl_name = gtk_label_new(name);
     channel->sc_pan = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL,
                                                -100, 100, 1);
+    gtk_range_set_value(GTK_RANGE(channel->sc_pan), 0);
     gtk_scale_add_mark(GTK_SCALE(channel->sc_pan), 0, GTK_POS_TOP, NULL);
     g_signal_connect(channel->sc_pan, "value-changed",
                      *G_CALLBACK(on_slider_changed), channel);
@@ -183,9 +184,9 @@ void bbf_channel_init(bbf_channel_t *channel, bbf_channel_type type,
     } else if (channel->type == INSTR) {
         channel->cb_Sens = gtk_combo_box_text_new();
         gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(channel->cb_Sens),
-                                  NULL, "-10 dBu");
+                                  NULL, "-10 dBV");
         gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(channel->cb_Sens),
-                                  NULL, "+4 dBV");
+                                  NULL, "+4 dBu");
         g_signal_connect(channel->cb_Sens, "changed",
                          *G_CALLBACK(on_cb_sens), channel);
     }

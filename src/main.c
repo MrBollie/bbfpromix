@@ -254,7 +254,7 @@ static void activate(GtkApplication *app, gpointer *user_data) {
     gtk_grid_attach(main_grid, label_clock, 4, 12, 2, 1);
     app_data->cb_clock = gtk_combo_box_text_new();
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(app_data->cb_clock), NULL, 
-                              "Auto Sync");
+                              "AutoSync");
     gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(app_data->cb_clock), NULL, 
                               "Internal");
     g_signal_connect(app_data->cb_clock, "changed", 
