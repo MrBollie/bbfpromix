@@ -70,7 +70,7 @@ endif
 #SHARED = -shared
 
 ifeq ($(MACOS),true)
-SHARED = -dynamiclib
+#SHARED = -dynamiclib
 endif
 
 # --------------------------------------------------------------

@@ -1,6 +1,5 @@
 #!/usr/bin/make -f
 
-DEBUG = true
 CFLAGS ?= `pkg-config alsa gtk+-3.0 --cflags`
 LDFLAGS ?= `pkg-config alsa gtk+-3.0 --libs`
 
@@ -9,22 +8,18 @@ include Makefile.mk
 # --------------------------------------------------------------
 
 PREFIX  ?= /usr/local
-DESTDIR ?=
+DESTDIR ?= 
 BUILDDIR ?= build
 
 # --------------------------------------------------------------
 # Default target is to build all plugins
 
-all: build
-build: bbfpromix
+all: bbfpromix
 
 # --------------------------------------------------------------
 # bolliedelay build rules
 
 bbfpromix: $(BUILDDIR) $(BUILDDIR)/bbfpromix
-
-$(BUILDDIR):
-	mkdir -p $(BUILDDIR)
 
 $(BUILDDIR)/channel.o: src/channel.c
 	$(CC) $^ $(BUILD_C_FLAGS) $(LINK_FLAGS) -lm -o $@ -c
@@ -35,6 +30,9 @@ $(BUILDDIR)/main.o: src/main.c
 $(BUILDDIR)/bbfpromix: $(BUILDDIR)/channel.o $(BUILDDIR)/main.o
 	$(CC) $^ $(BUILD_C_FLAGS) $(LINK_FLAGS) -lm $(SHARED) -o $@
 
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
+
 # --------------------------------------------------------------
 
 clean:
@@ -42,7 +40,7 @@ clean:
 
 # --------------------------------------------------------------
 
-install: build
+install: bbfpromix
 	echo "Install"
 	install -d $(DESTDIR)$(PREFIX)/bin
 

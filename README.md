@@ -4,4 +4,6 @@ In order to use this, you need to patch your kernel. The patch has been submitte
 
 A simple make should do on this.
 
+If you want to debug it, use `make DEBUG="true"`
+
 Use with caution! And feedback is always welcome. :)
