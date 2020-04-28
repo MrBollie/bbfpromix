@@ -238,7 +238,7 @@ void bbf_channel_set_output(bbf_channel_t *channel, unsigned int output) {
  * \return true if the matching output was found and set
  *
  */
-bool bbf_find_and_set(bbf_channel_t *channel, snd_mixer_elem_t *elem) {
+bool bbf_channel_find_and_set(bbf_channel_t *channel, snd_mixer_elem_t *elem) {
     char name[32];
     if (channel->type == MIC) {
         snprintf(name, 32, "Mic-%s 48V", channel->name);

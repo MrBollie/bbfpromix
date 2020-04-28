@@ -136,9 +136,9 @@ static void connect_alsa_mixer_elems(bbf_app_data_t *app_data) {
 	}
 	
         for (int i = 0 ; i < BBF_NOF_INPUTS ; ++i) {
-            if (bbf_find_and_set(&app_data->input_channels[i], elem))
+            if (bbf_channel_find_and_set(&app_data->input_channels[i], elem))
                 continue;
-            if (bbf_find_and_set(&app_data->playback_channels[i], elem))
+            if (bbf_channel_find_and_set(&app_data->playback_channels[i], elem))
                 continue;
         }
     }

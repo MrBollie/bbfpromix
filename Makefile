@@ -24,10 +24,13 @@ bbfpromix: $(BUILDDIR) $(BUILDDIR)/bbfpromix $(BUILDDIR)/bbfpromix.desktop
 $(BUILDDIR)/channel.o: src/channel.c
 	$(CC) $^ $(BUILD_C_FLAGS) $(LINK_FLAGS) -lm -o $@ -c
 
+$(BUILDDIR)/settings.o: src/settings.c
+	$(CC) $^ $(BUILD_C_FLAGS) $(LINK_FLAGS) -lm -o $@ -c
+
 $(BUILDDIR)/main.o: src/main.c
 	$(CC) $^ $(BUILD_C_FLAGS) $(LINK_FLAGS) -lm -o $@ -c
 
-$(BUILDDIR)/bbfpromix: $(BUILDDIR)/channel.o $(BUILDDIR)/main.o
+$(BUILDDIR)/bbfpromix: $(BUILDDIR)/channel.o $(BUILDDIR)/settings.o $(BUILDDIR)/main.o
 	$(CC) $^ $(BUILD_C_FLAGS) $(LINK_FLAGS) -lm $(SHARED) -o $@
 
 $(BUILDDIR)/bbfpromix.desktop: misc/bbfpromix.desktop
