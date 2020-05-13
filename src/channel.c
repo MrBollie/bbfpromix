@@ -20,6 +20,7 @@
 
 #include "channel.h"
 #include <gtk/gtk.h>
+#include <math.h>
 
 static int on_selem_changed(snd_mixer_elem_t *elem, unsigned int mask) {
     bbf_channel_t *c =
@@ -131,6 +132,17 @@ static void on_slider_changed(GtkWidget* slider, gpointer user_data) {
     double pan = gtk_range_get_value(GTK_RANGE(c->sc_pan));
     double vol = gtk_range_get_value(GTK_RANGE(c->sc_vol));
 
+    if (vol >= BBF_VOL_SLIDER_ZERO_DB) {
+        vol = (vol - BBF_VOL_SLIDER_ZERO_DB) * 
+              ((BBF_VOL_MAX - BBF_VOL_ZERO_DB) /
+               (BBF_VOL_SLIDER_MAX - BBF_VOL_SLIDER_ZERO_DB))
+               + BBF_VOL_ZERO_DB;
+    }
+    else {
+        vol *= (BBF_VOL_ZERO_DB - BBF_VOL_MIN) /
+               (BBF_VOL_SLIDER_ZERO_DB - BBF_VOL_SLIDER_MIN);
+    }
+
    if (pan < 0) {
         // Rechts reduzieren
         pan = pan * -1; // normalisieren
@@ -148,12 +160,31 @@ static void on_slider_changed(GtkWidget* slider, gpointer user_data) {
         val_l = vol;
         val_r = vol;
     }
+#ifdef DEBUG
+    printf("Translated fader value: %.2f\n", vol);
+    printf("Value for left channel: %d\n", (int)val_l);
+    printf("Value for right channel: %d\n", (int)val_r);
+#endif
     c->no_signals = true;
     snd_mixer_selem_set_playback_volume_all(c->cur_output->elem_l, (int)val_l);
     snd_mixer_selem_set_playback_volume_all(c->cur_output->elem_r, (int)val_r);
     c->no_signals = false;
 }
 
+static gchar* on_slider_format_value(GtkWidget* slider, gdouble value, 
+                                     gpointer user_data) {
+    if (value > BBF_VOL_SLIDER_ZERO_DB) {
+        return g_strdup_printf("+%.1f dB",
+                               20. * log10((value - BBF_VOL_SLIDER_ZERO_DB) /
+                                           (BBF_VOL_SLIDER_MAX -
+                                            BBF_VOL_SLIDER_ZERO_DB)+1.));
+    }
+    //else if (value > 0) {
+        return g_strdup_printf("%.1f dB", 20. * log10(value/BBF_VOL_SLIDER_ZERO_DB));
+    /*}
+    return g_strdup_printf("-inf");
+    */
+}
 
 /** \brief Initialises a channel
  *
@@ -187,12 +218,16 @@ void bbf_channel_init(bbf_channel_t *channel, bbf_channel_type type,
                      *G_CALLBACK(on_slider_changed), channel);
 
     channel->sc_vol = gtk_scale_new_with_range(GTK_ORIENTATION_VERTICAL,
-                                               0, 46341, 1);
+                                               BBF_VOL_SLIDER_MIN, 
+					       BBF_VOL_SLIDER_MAX, 1);
     gtk_range_set_inverted(GTK_RANGE(channel->sc_vol), 1);
-    gtk_scale_add_mark(GTK_SCALE(channel->sc_vol), 32768, GTK_POS_RIGHT, 
-                       NULL);
+    gtk_scale_add_mark(GTK_SCALE(channel->sc_vol), BBF_VOL_SLIDER_ZERO_DB,
+		       GTK_POS_RIGHT, NULL);
     g_signal_connect(channel->sc_vol, "value-changed",
                      *G_CALLBACK(on_slider_changed), channel);
+    g_signal_connect(channel->sc_vol, "format-value",
+                     *G_CALLBACK(on_slider_format_value), channel);
+    
 
     if (channel->type == MIC) {
         channel->bt_48V = gtk_toggle_button_new_with_label("48V");
@@ -335,12 +370,10 @@ void bbf_update_sliders(bbf_channel_t *channel) {
     int8_t pan = 0;
     uint32_t fader = 0;
     if (diff < 0) {
-        // l ist lauter
         pan = (int8_t)(100./val_l * diff);
         fader = val_l;
     }
     else if (diff > 0) {
-        // r ist lauter
         pan = (int8_t)(100./val_r * diff);
         fader = val_r;
     }
@@ -349,6 +382,18 @@ void bbf_update_sliders(bbf_channel_t *channel) {
         fader = val_l;
     }
     gtk_range_set_value(GTK_RANGE(channel->sc_pan), pan);
+
+    if (fader >= BBF_VOL_ZERO_DB) {
+        fader = ((BBF_VOL_SLIDER_MAX - BBF_VOL_SLIDER_ZERO_DB) / 
+                 (BBF_VOL_MAX - BBF_VOL_ZERO_DB)) * 
+                (fader - BBF_VOL_ZERO_DB) + BBF_VOL_SLIDER_ZERO_DB;
+    } 
+    else {
+        fader = ((BBF_VOL_SLIDER_ZERO_DB - BBF_VOL_SLIDER_MIN) / 
+                 (BBF_VOL_ZERO_DB - BBF_VOL_MIN)) *
+                fader;
+    }
+    
     gtk_range_set_value(GTK_RANGE(channel->sc_vol), fader);
     channel->no_signals = false;
 }

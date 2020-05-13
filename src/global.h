@@ -23,6 +23,12 @@
 
 #define BBF_NOF_INPUTS 12
 #define BBF_NOF_OUTPUTS 6
+#define BBF_VOL_MAX 65536
+#define BBF_VOL_MIN 0
+#define BBF_VOL_SLIDER_MAX 120
+#define BBF_VOL_SLIDER_MIN 0
+#define BBF_VOL_SLIDER_ZERO_DB 100
+#define BBF_VOL_ZERO_DB (BBF_VOL_MAX/2.f)
 
 typedef enum __bool {
     false = 0,
