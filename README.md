@@ -7,3 +7,5 @@ A simple make should do on this.
 If you want to debug it, use `make DEBUG="true"`
 
 Use with caution! And feedback is always welcome. :)
+
+[![ko-fi](https://www.ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I61NTVW)
