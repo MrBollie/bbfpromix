@@ -211,7 +211,7 @@ static void activate(GtkApplication *app, gpointer *user_data) {
     gtk_grid_set_column_homogeneous (main_grid, 1);
 
     // Inputs
-    label_inputs = gtk_label_new("Inputs");
+    label_inputs = gtk_label_new("Hardware Inputs");
     gtk_widget_set_hexpand(label_inputs, TRUE);
     gtk_grid_attach(main_grid, label_inputs, 0, 0, 24, 1);
 
@@ -242,7 +242,7 @@ static void activate(GtkApplication *app, gpointer *user_data) {
     gtk_grid_attach(main_grid, separator, 0, 6, 24, 1);
 
     // Playbacks
-    label_playbacks = gtk_label_new("Playback");
+    label_playbacks = gtk_label_new("Software Playback");
     gtk_widget_set_hexpand(label_playbacks, TRUE);
     gtk_grid_attach(main_grid, label_playbacks, 0, 7, 24, 1);
 
@@ -266,7 +266,7 @@ static void activate(GtkApplication *app, gpointer *user_data) {
     }
 
     // Output selector
-    label_output = gtk_label_new("Output:");
+    label_output = gtk_label_new("Hardware Output:");
     gtk_grid_attach(main_grid, label_output, 0, 12, 2, 1);
     cb_output = gtk_combo_box_text_new();
     for (int i = 0 ; i < BBF_NOF_OUTPUTS ; ++i) {
