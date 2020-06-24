@@ -27,15 +27,18 @@
 #include "global.h"
 
 typedef struct __bbf_settings {
+	GtkWidget *cb_clock;
+	GtkWidget *bt_spdif;
 	GtkWidget *bt_spdif_pro;
 	GtkWidget *bt_spdif_emph;
+	snd_mixer_elem_t *clock;
+	snd_mixer_elem_t *spdif;
 	snd_mixer_elem_t *spdif_pro;
 	snd_mixer_elem_t *spdif_emph;
 	bool no_signals;
 } bbf_settings_t;
 
-void bbf_settings_connect_spdif_pro(bbf_settings_t*, snd_mixer_elem_t*);
-void bbf_settings_connect_spdif_emph(bbf_settings_t*, snd_mixer_elem_t*);
 void bbf_settings_init(bbf_settings_t*);
+bool bbf_settings_find_and_set(bbf_settings_t*, snd_mixer_elem_t*);
 
 #endif
