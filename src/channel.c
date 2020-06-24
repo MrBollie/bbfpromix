@@ -80,7 +80,7 @@ static int on_selem_changed_sens(snd_mixer_elem_t *elem, unsigned int mask) {
     else if (mask == SND_CTL_EVENT_MASK_VALUE) {
         if (c->no_signals)
             return 0;
-	    bbf_update_switches(c);
+        bbf_update_switches(c);
     }
 
     return 0;
