@@ -23,43 +23,15 @@
 #include <gtk/gtk.h>
 
 #include "channel.h"
+#include "settings.h"
 
 typedef struct __app_data {
     bbf_channel_t input_channels[BBF_NOF_INPUTS];
     bbf_channel_t playback_channels[BBF_NOF_INPUTS];
+    bbf_settings_t general_settings;
     snd_mixer_t *mixer;
-    snd_mixer_elem_t *clock;
-    GtkWidget *cb_clock;
     bool no_signals;
 } bbf_app_data_t;
-
-
-static void update_clock(bbf_app_data_t *app_data) {
-    if (!app_data->clock) 
-        return;
-
-    unsigned int item = 0;
-    snd_mixer_selem_get_enum_item(app_data->clock, 0, &item);
-    app_data->no_signals = true;
-    gtk_combo_box_set_active(GTK_COMBO_BOX(app_data->cb_clock), item);
-    app_data->no_signals = false;
-}
-
-static int on_selem_changed_clock(snd_mixer_elem_t *elem, unsigned int mask) {
-    bbf_app_data_t *app_data = 
-        (bbf_app_data_t*)snd_mixer_elem_get_callback_private(elem);
-
-    if (mask == SND_CTL_EVENT_MASK_REMOVE) {
-        app_data->clock = NULL;
-    }
-    else if (mask == SND_CTL_EVENT_MASK_VALUE) {
-        if (app_data->no_signals)
-            return 0;
-        update_clock(app_data);
-    }
-
-    return 0;
-}
 
 static int connect_alsa_mixer(bbf_app_data_t *app_data) {
     int err;
@@ -127,14 +99,9 @@ static void connect_alsa_mixer_elems(bbf_app_data_t *app_data) {
     for (elem = snd_mixer_first_elem (app_data->mixer); elem;
          elem = snd_mixer_elem_next (elem)) {
 
-        if (strcmp("Sample Clock Source", snd_mixer_selem_get_name(elem)) == 0) {
-            app_data->clock = elem;
-            snd_mixer_elem_set_callback(elem, on_selem_changed_clock);
-            snd_mixer_elem_set_callback_private(elem, app_data);
-            update_clock(app_data);
+        if (bbf_settings_find_and_set(&app_data->general_settings, elem))
             continue;
-	}
-	
+
         for (int i = 0 ; i < BBF_NOF_INPUTS ; ++i) {
             if (bbf_channel_find_and_set(&app_data->input_channels[i], elem))
                 continue;
@@ -149,19 +116,6 @@ static void reset_alsa_mixer_elems(bbf_app_data_t *app_data) {
         bbf_channel_reset(&app_data->input_channels[i]);
         bbf_channel_reset(&app_data->playback_channels[i]);
     }
-}
-
-static void on_clock_changed(GtkComboBox* combo, gpointer user_data) {
-    bbf_app_data_t *app_data = (bbf_app_data_t*)user_data;
-    if (app_data->no_signals || !app_data->clock)
-        return;
-    gint active = gtk_combo_box_get_active(GTK_COMBO_BOX(combo));
-    if (active < 0 || active > 1)
-        return;
-
-    app_data->no_signals = true;
-    snd_mixer_selem_set_enum_item(app_data->clock, 0, active);
-    app_data->no_signals = false;
 }
 
 static void on_output_changed(GtkComboBox* combo, gpointer user_data) {
@@ -278,19 +232,24 @@ static void activate(GtkApplication *app, gpointer *user_data) {
                      app_data);
     gtk_grid_attach(main_grid, cb_output, 2, 12, 2, 1);
 
+    // Settings
+    bbf_settings_init(&app_data->general_settings);
+     
     // Clock
     label_clock = gtk_label_new("Clock Mode:");
     gtk_grid_attach(main_grid, label_clock, 4, 12, 2, 1);
-    app_data->cb_clock = gtk_combo_box_text_new();
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(app_data->cb_clock), NULL, 
-                              "AutoSync");
-    gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(app_data->cb_clock), NULL, 
-                              "Internal");
-    g_signal_connect(app_data->cb_clock, "changed", 
-                     *G_CALLBACK(on_clock_changed),
-                     app_data);
-    gtk_grid_attach(main_grid, app_data->cb_clock, 6, 12, 2, 1);
-
+    gtk_grid_attach(main_grid, app_data->general_settings.cb_clock, 
+                    6, 12, 2, 1);
+    
+    // SPDIF 
+    gtk_grid_attach(main_grid, app_data->general_settings.bt_spdif, 
+                    10, 12, 2, 1);
+    // SPDIF Emph
+    gtk_grid_attach(main_grid, app_data->general_settings.bt_spdif_emph, 
+                    12, 12, 2, 1);
+    // SPDIF Pro
+    gtk_grid_attach(main_grid, app_data->general_settings.bt_spdif_pro, 
+                    14, 12, 2, 1);
 
     gtk_widget_set_hexpand(GTK_WIDGET(main_grid), TRUE);
     gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(main_grid));
@@ -300,12 +259,11 @@ static void activate(GtkApplication *app, gpointer *user_data) {
 }
 
 
-int main(int argc, char** argv)
-{
+int main(int argc, char** argv) {
     GtkApplication *app;
     bbf_app_data_t app_data;
+    printf("WHAT");
     app_data.mixer = NULL;
-    app_data.clock = NULL;
     app_data.no_signals = false;
     int status;
 
