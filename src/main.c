@@ -262,6 +262,7 @@ static void activate(GtkApplication *app, gpointer *user_data) {
 int main(int argc, char** argv) {
     GtkApplication *app;
     bbf_app_data_t app_data;
+    printf("WHAT");
     app_data.mixer = NULL;
     app_data.no_signals = false;
     int status;
