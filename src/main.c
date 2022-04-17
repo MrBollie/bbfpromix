@@ -127,26 +127,6 @@ static void on_output_changed(GtkComboBox* combo, gpointer user_data) {
     }
 }
 
-static gint on_timeout(gpointer user_data) {
-    bbf_app_data_t *app_data = (bbf_app_data_t*)user_data;
-    if (!app_data->mixer) {
-        int r = connect_alsa_mixer(app_data);
-        if (r == 0) {
-            printf("Connected.\n");
-            connect_alsa_mixer_elems(app_data);
-        }
-    } else {
-        int r = snd_mixer_handle_events(app_data->mixer);
-        if (r < 0) {
-            snd_mixer_close(app_data->mixer);
-            app_data->mixer = NULL;
-            printf("disonnected.\n");
-            reset_alsa_mixer_elems(app_data);
-        }
-    }
-    return 1;
-}
-
 static void activate(GtkApplication *app, gpointer *user_data) {
     bbf_app_data_t *app_data = (bbf_app_data_t*)user_data;
     GtkWidget *main_window;
@@ -255,7 +235,16 @@ static void activate(GtkApplication *app, gpointer *user_data) {
     gtk_container_add(GTK_CONTAINER(main_window), GTK_WIDGET(main_grid));
 
     gtk_widget_show_all(main_window);
-    g_timeout_add(10, on_timeout, app_data);
+
+    int r = connect_alsa_mixer(app_data);
+    if (r == 0) {
+        connect_alsa_mixer_elems(app_data);
+    } else {
+        printf("Could not connect to ALSA mixer!\n");
+    }
+    // This needs to be called after connecting to ALSA mixer to initialize
+    // the state of the widgets from the state of ALSA mixer.
+    gtk_combo_box_set_active(GTK_COMBO_BOX(cb_output), 0);
 }
 
 
