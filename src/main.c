@@ -111,13 +111,6 @@ static void connect_alsa_mixer_elems(bbf_app_data_t *app_data) {
     }
 }
 
-static void reset_alsa_mixer_elems(bbf_app_data_t *app_data) {
-    for (int i = 0 ; i < BBF_NOF_INPUTS ; ++i) {
-        bbf_channel_reset(&app_data->input_channels[i]);
-        bbf_channel_reset(&app_data->playback_channels[i]);
-    }
-}
-
 static void on_output_changed(GtkComboBox* combo, gpointer user_data) {
     bbf_app_data_t *app_data = (bbf_app_data_t*)user_data;
     gint entry_id = gtk_combo_box_get_active(combo);
