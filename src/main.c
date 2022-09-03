@@ -140,7 +140,7 @@ static gint on_timeout(gpointer user_data) {
         if (r < 0) {
             snd_mixer_close(app_data->mixer);
             app_data->mixer = NULL;
-            printf("disonnected.\n");
+            printf("Disconnected.\n");
             reset_alsa_mixer_elems(app_data);
         }
     }
